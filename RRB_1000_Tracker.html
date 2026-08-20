@@ -1,0 +1,850 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RRB PO & OA 1000% Success Tracker</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <!-- Chart.js for Mock Analytics -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body { background-color: #f3f4f6; }
+        .day-box { transition: all 0.2s; }
+        .day-box:hover { transform: scale(1.1); }
+        .completed-day { background-color: #10b981; color: white; text-decoration: line-through; border-color: #059669; }
+        .pending-day { background-color: #fef3c7; color: #92400e; border-color: #fbbf24; }
+        .future-day { background-color: #e5e7eb; color: #6b7280; border-color: #d1d5db; }
+        .missed-day { background-color: #ef4444; color: white; text-decoration: line-through; border-color: #b91c1c; }
+        
+        /* Glassmorphism for cards */
+        .glass-card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        }
+    </style>
+</head>
+<body class="text-gray-800 antialiased min-h-screen pb-10">
+    
+    <!-- Top Nav -->
+    <nav class="bg-indigo-700 text-white shadow-lg p-4 sticky top-0 z-50">
+        <div class="container mx-auto flex flex-col md:flex-row justify-between items-center gap-4">
+            <h1 class="text-2xl font-bold tracking-wider"><i class="fas fa-bullseye text-yellow-400 mr-2"></i> RRB 1000% SUCCESS</h1>
+            
+            <!-- Quick Links -->
+            <div class="flex flex-wrap justify-center gap-2 text-sm">
+                <a href="Ultimate_Study_Manager.html" class="bg-indigo-600 hover:bg-indigo-500 px-3 py-1.5 rounded-lg border border-indigo-400 transition-colors shadow-sm" target="_blank"><i class="fas fa-book-open mr-1 text-yellow-300"></i> Study Manager</a>
+                <a href="speed-math-master.html" class="bg-indigo-600 hover:bg-indigo-500 px-3 py-1.5 rounded-lg border border-indigo-400 transition-colors shadow-sm" target="_blank"><i class="fas fa-bolt mr-1 text-yellow-300"></i> Speed Math</a>
+                <a href="banking_todo.html" class="bg-indigo-600 hover:bg-indigo-500 px-3 py-1.5 rounded-lg border border-indigo-400 transition-colors shadow-sm" target="_blank"><i class="fas fa-list-check mr-1 text-yellow-300"></i> Old Todo</a>
+            </div>
+
+            <div class="text-sm font-medium bg-indigo-800 px-4 py-2 rounded-full shadow-inner border border-indigo-600">
+                <i class="far fa-calendar-alt mr-1"></i> <span id="current-date-display"></span>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mx-auto px-4 mt-8">
+        
+        <!-- Countdown Section -->
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+            <div class="glass-card rounded-xl p-4 text-center border-t-4 border-blue-500">
+                <h3 class="text-gray-500 font-semibold text-sm uppercase">RRB PO Pre</h3>
+                <div class="text-3xl font-bold text-blue-600 mt-2" id="cd-po-pre">--</div>
+                <p class="text-xs text-gray-400 mt-1">21 Nov 2026</p>
+            </div>
+            <div class="glass-card rounded-xl p-4 text-center border-t-4 border-green-500">
+                <h3 class="text-gray-500 font-semibold text-sm uppercase">RRB OA Pre</h3>
+                <div class="text-3xl font-bold text-green-600 mt-2" id="cd-oa-pre">--</div>
+                <p class="text-xs text-gray-400 mt-1">6 Dec 2026</p>
+            </div>
+            <div class="glass-card rounded-xl p-4 text-center border-t-4 border-purple-500">
+                <h3 class="text-gray-500 font-semibold text-sm uppercase">RRB PO Mains</h3>
+                <div class="text-3xl font-bold text-purple-600 mt-2" id="cd-po-mains">--</div>
+                <p class="text-xs text-gray-400 mt-1">Target Date</p>
+            </div>
+            <div class="glass-card rounded-xl p-4 text-center border-t-4 border-red-500">
+                <h3 class="text-gray-500 font-semibold text-sm uppercase">RRB OA Mains</h3>
+                <div class="text-3xl font-bold text-red-600 mt-2" id="cd-oa-mains">--</div>
+                <p class="text-xs text-gray-400 mt-1">Target Date</p>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8">
+            
+            <!-- Tasks Section -->
+            <div class="lg:col-span-1 glass-card rounded-2xl p-6 relative">
+                <div class="flex justify-between items-center mb-6 border-b pb-4">
+                    <h2 class="text-xl font-bold text-gray-800"><i class="fas fa-tasks text-indigo-500 mr-2"></i> Daily To-Do List</h2>
+                    <span id="task-progress-text" class="text-sm font-bold text-indigo-600 bg-indigo-100 px-3 py-1 rounded-full">0/11</span>
+                </div>
+                
+                <!-- Progress Bar -->
+                <div class="w-full bg-gray-200 rounded-full h-2.5 mb-6">
+                    <div id="progress-bar" class="bg-indigo-600 h-2.5 rounded-full transition-all duration-500" style="width: 0%"></div>
+                </div>
+
+                <div id="tasks-container" class="space-y-3">
+                    <!-- Tasks will be generated by JS -->
+                </div>
+                
+                <div class="mt-6 pt-4 border-t text-center flex justify-between items-center">
+                    <p class="text-xs text-green-600 font-medium bg-green-50 px-2 py-1 rounded border border-green-200"><i class="fas fa-cloud-arrow-up"></i> Auto-saves daily!</p>
+                    <button onclick="resetToday()" class="text-xs text-red-500 hover:text-red-700 font-bold bg-red-50 px-2 py-1 rounded border border-red-200">
+                        <i class="fas fa-undo mr-1"></i> Reset Today
+                    </button>
+                </div>
+            </div>
+
+            <!-- Tracker/History Section -->
+            <div class="lg:col-span-2 glass-card rounded-2xl p-6">
+                <h2 class="text-xl font-bold text-gray-800 mb-2"><i class="fas fa-calendar-check text-green-500 mr-2"></i> 163-Day Journey Tracker</h2>
+                <p class="text-sm text-gray-500 mb-6">Complete all tasks daily to cross out the day. It will automatically create a new fresh list every single day at midnight while safely keeping your previous history in this grid. Click on past days to view your history!</p>
+                
+                <!-- History Detail View (Hidden by default) -->
+                <div id="history-view" class="hidden mb-6 bg-indigo-50 border border-indigo-200 rounded-lg p-4 shadow-sm relative">
+                    <div class="flex justify-between items-center mb-3 border-b border-indigo-100 pb-2">
+                        <h3 class="font-bold text-indigo-800 text-lg" id="history-date-title">Day X</h3>
+                        <button onclick="closeHistory()" class="text-gray-500 hover:text-gray-800 bg-white rounded-full w-8 h-8 flex items-center justify-center shadow"><i class="fas fa-times"></i></button>
+                    </div>
+                    <ul id="history-tasks-list" class="text-sm space-y-2 text-gray-700 font-medium"></ul>
+                </div>
+
+                <div class="flex flex-wrap gap-2" id="days-grid">
+                    <!-- Grid generated by JS -->
+                </div>
+                
+                <div class="mt-8 flex flex-wrap items-center justify-center gap-4 text-sm text-gray-600 bg-gray-50 p-3 rounded-lg border">
+                    <div class="flex items-center"><div class="w-4 h-4 rounded completed-day mr-2"></div> <span class="font-medium">Completed</span></div>
+                    <div class="flex items-center"><div class="w-4 h-4 rounded pending-day mr-2"></div> <span class="font-medium">Today (Pending)</span></div>
+                    <div class="flex items-center"><div class="w-4 h-4 rounded missed-day mr-2"></div> <span class="font-medium">Missed</span></div>
+                    <div class="flex items-center"><div class="w-4 h-4 rounded future-day mr-2 border border-gray-300"></div> <span class="font-medium">Future</span></div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- NEW MOCK TRACKER SECTION -->
+        <div class="mt-8 glass-card rounded-2xl p-6">
+            <h2 class="text-2xl font-bold text-gray-800 mb-6"><i class="fas fa-chart-line text-blue-500 mr-2"></i> Mock Test Tracker & Analytics</h2>
+            
+            <!-- Cutoff Board -->
+            <div class="mb-8 bg-yellow-50 border border-yellow-200 rounded-xl p-4 shadow-sm flex flex-col md:flex-row justify-between items-center gap-4">
+                <div class="flex items-center">
+                    <i class="fas fa-bullseye text-yellow-500 text-3xl mr-3"></i>
+                    <div>
+                        <h4 class="font-bold text-yellow-800">State Cutoff Targets</h4>
+                        <p class="text-xs text-yellow-700">Set your state's previous year cutoffs to track your target gap automatically.</p>
+                    </div>
+                </div>
+                <div class="flex items-center gap-4">
+                    <div class="flex flex-col">
+                        <label class="text-xs font-bold text-gray-500 mb-1 uppercase">PO Cutoff</label>
+                        <input type="number" step="0.25" id="cutoffPO" class="w-24 border border-yellow-300 rounded px-3 py-1.5 text-sm font-bold text-center focus:outline-none focus:ring-2 focus:ring-yellow-400" onchange="saveCutoffs()" placeholder="e.g. 55">
+                    </div>
+                    <div class="flex flex-col">
+                        <label class="text-xs font-bold text-gray-500 mb-1 uppercase">Clerk Cutoff</label>
+                        <input type="number" step="0.25" id="cutoffClerk" class="w-24 border border-yellow-300 rounded px-3 py-1.5 text-sm font-bold text-center focus:outline-none focus:ring-2 focus:ring-yellow-400" onchange="saveCutoffs()" placeholder="e.g. 72">
+                    </div>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                
+                <!-- Add New Mock Form -->
+                <div class="lg:col-span-1 bg-white p-5 rounded-xl border border-gray-200 shadow-sm self-start">
+                    <h3 class="font-bold text-lg mb-4 text-gray-700"><i class="fas fa-plus-circle text-indigo-500 mr-1"></i> Log New Score</h3>
+                    <form id="mockForm" onsubmit="addMock(event)" class="space-y-4 text-sm">
+                        <div>
+                            <label class="block text-gray-600 mb-1 font-medium">Exam / Subject Name</label>
+                            <input type="text" id="mockName" required class="w-full border rounded-lg p-2.5 focus:ring-2 focus:ring-indigo-300 outline-none bg-gray-50" placeholder="e.g. RRB PO Pre Mock 4">
+                        </div>
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-gray-600 mb-1 font-medium">Date</label>
+                                <input type="date" id="mockDate" required class="w-full border rounded-lg p-2.5 focus:ring-2 focus:ring-indigo-300 outline-none bg-gray-50">
+                            </div>
+                            <div>
+                                <label class="block text-gray-600 mb-1 font-medium">Type</label>
+                                <select id="mockType" class="w-full border rounded-lg p-2.5 bg-gray-50 focus:ring-2 focus:ring-indigo-300 outline-none">
+                                    <option value="Full">Full Mock</option>
+                                    <option value="Sectional">Sectional</option>
+                                    <option value="Topic">Topic Test</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-gray-600 mb-1 font-medium">Marks Obtained</label>
+                                <input type="number" step="0.25" id="mockMarks" required class="w-full border rounded-lg p-2.5 font-bold text-indigo-700 focus:ring-2 focus:ring-indigo-300 outline-none bg-gray-50" placeholder="0.0">
+                            </div>
+                            <div>
+                                <label class="block text-gray-600 mb-1 font-medium">Total Marks</label>
+                                <input type="number" id="mockTotal" required class="w-full border rounded-lg p-2.5 focus:ring-2 focus:ring-indigo-300 outline-none bg-gray-50" placeholder="100">
+                            </div>
+                        </div>
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-gray-600 mb-1 font-medium">Attempted Qs</label>
+                                <input type="number" id="mockAttempted" required class="w-full border rounded-lg p-2.5 focus:ring-2 focus:ring-indigo-300 outline-none bg-gray-50">
+                            </div>
+                            <div>
+                                <label class="block text-gray-600 mb-1 font-medium">Correct Qs</label>
+                                <input type="number" id="mockCorrect" required class="w-full border rounded-lg p-2.5 focus:ring-2 focus:ring-indigo-300 outline-none bg-gray-50">
+                            </div>
+                        </div>
+                        <button type="submit" class="w-full bg-indigo-600 text-white font-bold py-2.5 rounded-lg hover:bg-indigo-700 transition shadow-md mt-2">Save Record</button>
+                    </form>
+                </div>
+
+                <!-- Charts and Reports -->
+                <div class="lg:col-span-2">
+                    <!-- Report Card -->
+                    <div id="mockReportCard" class="bg-indigo-50 border-l-4 border-indigo-500 rounded-r-lg p-4 mb-6 shadow-sm hidden">
+                        <div class="flex items-start">
+                            <i class="fas fa-info-circle text-indigo-500 mt-1 mr-3 text-lg"></i>
+                            <div class="w-full">
+                                <h4 class="font-bold text-indigo-900">Analytics Insight</h4>
+                                <p id="mockReportText" class="text-sm text-indigo-800 font-medium mt-1"></p>
+                                <div id="mockCutoffText" class="mt-3 pt-3 border-t border-indigo-200 text-sm font-semibold hidden"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Chart -->
+                    <div class="bg-white p-4 rounded-xl border border-gray-200 shadow-sm mb-6 relative h-64 w-full flex items-center justify-center">
+                        <canvas id="mockChart"></canvas>
+                        <div id="noDataMsg" class="absolute text-gray-400 font-medium italic">Add mock scores to view progress graph</div>
+                    </div>
+                    
+                    <!-- History Table -->
+                    <div class="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+                        <div class="max-h-60 overflow-y-auto">
+                            <table class="w-full text-left text-sm">
+                                <thead class="bg-gray-100 sticky top-0 shadow-sm z-10">
+                                    <tr>
+                                        <th class="p-3 text-gray-700 font-bold whitespace-nowrap">Date</th>
+                                        <th class="p-3 text-gray-700 font-bold">Exam / Subject</th>
+                                        <th class="p-3 text-gray-700 font-bold whitespace-nowrap">Score</th>
+                                        <th class="p-3 text-gray-700 font-bold whitespace-nowrap">Accuracy</th>
+                                        <th class="p-3 text-gray-700 font-bold text-center">Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="mockTableBody" class="divide-y text-gray-700 bg-white">
+                                    <!-- JS Generated -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- NEW MISTAKE BOOK SECTION -->
+        <div class="mt-8 glass-card rounded-2xl p-6">
+            <div class="flex justify-between items-center mb-6 border-b pb-4">
+                <h2 class="text-2xl font-bold text-gray-800"><i class="fas fa-book-journal-whills text-orange-500 mr-2"></i> Digital Mistake Book</h2>
+                <span class="text-xs bg-orange-100 text-orange-800 px-3 py-1 rounded-full font-bold shadow-sm"><i class="fas fa-eye mr-1"></i> Revise before every mock!</span>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <!-- Add Mistake -->
+                <div class="md:col-span-1 bg-white p-5 rounded-xl border border-gray-200 shadow-sm self-start">
+                    <h3 class="font-bold text-gray-700 mb-4"><i class="fas fa-pen text-orange-400 mr-1"></i> Log New Mistake</h3>
+                    <form id="mistakeForm" onsubmit="addMistake(event)">
+                        <div class="mb-4">
+                            <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Subject / Topic</label>
+                            <input type="text" id="mistakeTopic" required class="w-full border rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-orange-300 outline-none bg-gray-50" placeholder="e.g. Syllogism (Only a few)">
+                        </div>
+                        <div class="mb-4">
+                            <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Mistake Details & Logic</label>
+                            <textarea id="mistakeDesc" required rows="4" class="w-full border rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-orange-300 outline-none bg-gray-50" placeholder="What went wrong? What is the correct logic or formula?"></textarea>
+                        </div>
+                        <button type="submit" class="w-full bg-orange-500 hover:bg-orange-600 text-white font-bold py-2.5 rounded-lg transition shadow-md">Save Note</button>
+                    </form>
+                </div>
+                
+                <!-- Mistake List -->
+                <div class="md:col-span-2">
+                    <div id="mistakesList" class="space-y-4 max-h-[400px] overflow-y-auto pr-2">
+                        <!-- Generated by JS -->
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        // ==========================
+        // 1. MAIN TRACKER LOGIC
+        // ==========================
+        const START_DATE = new Date("2026-08-20T00:00:00").setHours(0,0,0,0); 
+        const TOTAL_DAYS = 163;
+        
+        const EXAM_DATES = {
+            poPre: new Date("2026-11-21").getTime(),
+            oaPre: new Date("2026-12-06").getTime(),
+            poMains: new Date(START_DATE + (122 * 24 * 60 * 60 * 1000)).getTime(),
+            oaMains: new Date(START_DATE + (163 * 24 * 60 * 60 * 1000)).getTime()
+        };
+
+        const DEFAULT_TASKS = [
+            { id: 't1', topic: 'Speed Math', desc: 'Tables, Squares, Cubes, Fractions Practice', time: '30m', color: 'bg-yellow-100 text-yellow-800 border-yellow-200' },
+            { id: 't2', topic: 'Current Affairs', desc: 'Daily Video/PDF & Revision', time: '45m', color: 'bg-blue-100 text-blue-800 border-blue-200' },
+            { id: 't10', topic: 'Hindi / English', desc: 'Hindi Article Reading & Grammar Practice', time: '45m', color: 'bg-orange-100 text-orange-800 border-orange-200' },
+            { id: 't3', topic: 'Editorial', desc: 'Newspaper Reading (Vocab building)', time: '45m', color: 'bg-gray-100 text-gray-800 border-gray-300' },
+            { id: 't4', topic: 'Reasoning', desc: 'Exam PDF Practice (Target: 40 Qs)', time: '1h', color: 'bg-purple-100 text-purple-800 border-purple-200' },
+            { id: 't5', topic: 'Quant', desc: 'Arithmetic One Topic Practice', time: '1h', color: 'bg-green-100 text-green-800 border-green-200' },
+            { id: 't6', topic: 'Sectional Test', desc: 'Sectional Mock / Practice Sets', time: '30m', color: 'bg-pink-100 text-pink-800 border-pink-200' },
+            { id: 't7', topic: 'Prelims Mock', desc: 'Full Mock Test (PO/Clerk) + Deep Analysis', time: '1.5h', color: 'bg-red-100 text-red-800 border-red-200' },
+            { id: 't8', topic: 'Reasoning Mains', desc: 'High-Level Puzzles (20/35 format)', time: '1h', color: 'bg-indigo-100 text-indigo-800 border-indigo-200' },
+            { id: 't9', topic: 'Quant Mains', desc: 'High-Level DI (19/35 format)', time: '1h', color: 'bg-teal-100 text-teal-800 border-teal-200' },
+            { id: 't11', topic: 'Computer', desc: 'Computer Awareness Study & Quizzes', time: '30m', color: 'bg-cyan-100 text-cyan-800 border-cyan-200' }
+        ];
+
+        let state = JSON.parse(localStorage.getItem('rrbTrackerData')) || { history: {}, mocks: [], mistakes: [], cutoffs: {po: null, clerk: null} };
+        if(!state.mocks) state.mocks = []; 
+        if(!state.mistakes) state.mistakes = []; 
+        if(!state.cutoffs) state.cutoffs = {po: null, clerk: null};
+        
+        function getTodayString() {
+            const d = new Date();
+            return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+        }
+
+        const todayStr = getTodayString();
+        const todayDateObj = new Date(todayStr + "T00:00:00").setHours(0,0,0,0);
+        
+        let currentDayNumber = Math.floor((todayDateObj - START_DATE) / (1000 * 60 * 60 * 24)) + 1;
+        if (currentDayNumber < 1) currentDayNumber = 1; 
+        
+        if (!state.history[todayStr]) {
+            state.history[todayStr] = {
+                tasks: {},
+                completed: false,
+                dayNumber: currentDayNumber
+            };
+            DEFAULT_TASKS.forEach(t => state.history[todayStr].tasks[t.id] = false);
+            saveState(); 
+        } else {
+            DEFAULT_TASKS.forEach(t => {
+                if (state.history[todayStr].tasks[t.id] === undefined) {
+                    state.history[todayStr].tasks[t.id] = false;
+                }
+            });
+            saveState();
+        }
+
+        function saveState() {
+            localStorage.setItem('rrbTrackerData', JSON.stringify(state));
+            updateUI();
+        }
+
+        function updateCountdowns() {
+            const now = new Date().getTime();
+            const calcDays = (target) => {
+                const diff = target - now;
+                return diff > 0 ? Math.ceil(diff / (1000 * 60 * 60 * 24)) + ' Days' : 'Done!';
+            };
+            document.getElementById('cd-po-pre').innerText = calcDays(EXAM_DATES.poPre);
+            document.getElementById('cd-oa-pre').innerText = calcDays(EXAM_DATES.oaPre);
+            document.getElementById('cd-po-mains').innerText = calcDays(EXAM_DATES.poMains);
+            document.getElementById('cd-oa-mains').innerText = calcDays(EXAM_DATES.oaMains);
+            
+            const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+            document.getElementById('current-date-display').innerText = new Date().toLocaleDateString('en-US', options);
+        }
+
+        function renderTasks() {
+            const container = document.getElementById('tasks-container');
+            container.innerHTML = '';
+            
+            const todayTasks = state.history[todayStr].tasks;
+            
+            DEFAULT_TASKS.forEach(task => {
+                const isChecked = todayTasks[task.id];
+                const div = document.createElement('div');
+                div.className = `flex items-center p-3 border rounded-xl transition-all duration-300 shadow-sm ${isChecked ? 'bg-gray-100 opacity-60 border-gray-200' : 'bg-white border-indigo-100 hover:border-indigo-300 hover:shadow-md'}`;
+                
+                div.innerHTML = `
+                    <div class="relative flex items-center justify-center mr-3">
+                        <input type="checkbox" id="check-${task.id}" ${isChecked ? 'checked' : ''} 
+                               class="peer w-6 h-6 text-indigo-600 rounded border-gray-300 focus:ring-indigo-500 cursor-pointer appearance-none checked:bg-indigo-600 checked:border-transparent transition-all"
+                               onchange="toggleTask('${task.id}', this.checked)">
+                        <i class="fas fa-check text-white absolute pointer-events-none opacity-0 peer-checked:opacity-100 text-sm"></i>
+                    </div>
+                    <label for="check-${task.id}" class="flex-1 cursor-pointer select-none">
+                        <div class="flex justify-between items-center mb-1">
+                            <span class="text-xs font-bold uppercase px-2 py-0.5 rounded border ${task.color}">${task.topic}</span>
+                            <span class="text-xs text-gray-500 font-bold bg-gray-100 px-2 rounded-full"><i class="far fa-clock mr-1"></i>${task.time}</span>
+                        </div>
+                        <p class="text-sm font-semibold ${isChecked ? 'line-through text-gray-400' : 'text-gray-800'}">${task.desc}</p>
+                    </label>
+                `;
+                container.appendChild(div);
+            });
+        }
+
+        function toggleTask(taskId, isChecked) {
+            state.history[todayStr].tasks[taskId] = isChecked;
+            const allCompleted = Object.values(state.history[todayStr].tasks).every(v => v === true);
+            state.history[todayStr].completed = allCompleted;
+            saveState();
+        }
+
+        function resetToday() {
+            if(confirm("Are you sure you want to reset all tasks for TODAY only?")) {
+                DEFAULT_TASKS.forEach(t => state.history[todayStr].tasks[t.id] = false);
+                state.history[todayStr].completed = false;
+                saveState();
+            }
+        }
+
+        function renderGrid() {
+            const grid = document.getElementById('days-grid');
+            grid.innerHTML = '';
+            
+            for (let i = 1; i <= TOTAL_DAYS; i++) {
+                const dateOfGridObj = new Date(START_DATE + ((i - 1) * 24 * 60 * 60 * 1000));
+                const dateStr = `${dateOfGridObj.getFullYear()}-${String(dateOfGridObj.getMonth() + 1).padStart(2, '0')}-${String(dateOfGridObj.getDate()).padStart(2, '0')}`;
+                
+                const dayBox = document.createElement('div');
+                dayBox.className = 'w-9 h-9 rounded-lg border flex items-center justify-center text-xs font-bold cursor-pointer day-box shadow-sm';
+                dayBox.innerText = i;
+                
+                let statusClass = 'future-day';
+                
+                if (dateOfGridObj.getTime() < todayDateObj) {
+                    if (state.history[dateStr] && state.history[dateStr].completed) {
+                        statusClass = 'completed-day';
+                        dayBox.innerHTML = '<i class="fas fa-times text-white text-base drop-shadow-md"></i>';
+                    } else {
+                        statusClass = 'missed-day';
+                        dayBox.innerHTML = '<i class="fas fa-minus text-white text-base"></i>';
+                    }
+                } else if (dateOfGridObj.getTime() === todayDateObj) {
+                    if (state.history[todayStr].completed) {
+                        statusClass = 'completed-day';
+                        dayBox.innerHTML = '<i class="fas fa-times text-white text-base drop-shadow-md"></i>';
+                    } else {
+                        statusClass = 'pending-day';
+                    }
+                }
+
+                dayBox.classList.add(statusClass);
+                
+                if (dateOfGridObj.getTime() <= todayDateObj) {
+                    dayBox.onclick = () => showHistory(dateStr, i);
+                } else {
+                    dayBox.title = "Future day (Cannot view yet)";
+                }
+                
+                grid.appendChild(dayBox);
+            }
+        }
+
+        function showHistory(dateStr, dayNumber) {
+            const view = document.getElementById('history-view');
+            const title = document.getElementById('history-date-title');
+            const list = document.getElementById('history-tasks-list');
+            const histData = state.history[dateStr];
+            
+            const displayDate = new Date(dateStr).toLocaleDateString('en-US', {month: 'long', day: 'numeric', year: 'numeric'});
+            title.innerHTML = `Day ${dayNumber} <span class="text-sm font-medium text-indigo-500 ml-2">(${displayDate})</span>`;
+            
+            list.innerHTML = '';
+            if (histData && histData.tasks) {
+                DEFAULT_TASKS.forEach(t => {
+                    const done = histData.tasks[t.id] || false; 
+                    list.innerHTML += `<li class="flex items-start p-1.5 rounded ${done ? 'bg-green-50' : ''}">
+                        <i class="fas ${done ? 'fa-check-circle text-green-500' : 'fa-times-circle text-red-400'} mt-0.5 mr-3 text-lg"></i>
+                        <div>
+                            <span class="${done ? 'text-gray-800 font-bold' : 'text-gray-500 line-through font-semibold'}">[${t.topic}]</span>
+                            <span class="${done ? 'text-gray-600' : 'text-gray-400 line-through'}">${t.desc}</span>
+                        </div>
+                    </li>`;
+                });
+            } else {
+                list.innerHTML = '<li class="text-red-500 font-semibold bg-red-50 p-3 rounded text-center"><i class="fas fa-exclamation-triangle mr-2"></i> No data recorded for this day. (Task Missed)</li>';
+            }
+            
+            view.classList.remove('hidden');
+            view.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+
+        function closeHistory() {
+            document.getElementById('history-view').classList.add('hidden');
+        }
+
+        function updateUI() {
+            const todayTasks = state.history[todayStr].tasks;
+            const total = DEFAULT_TASKS.length;
+            const completed = Object.values(todayTasks).filter(v => v).length;
+            
+            document.getElementById('task-progress-text').innerText = `${completed}/${total} Tasks Done`;
+            const percent = (completed / total) * 100;
+            document.getElementById('progress-bar').style.width = `${percent}%`;
+            
+            if (completed === total) {
+                document.getElementById('progress-bar').classList.remove('bg-indigo-600');
+                document.getElementById('progress-bar').classList.add('bg-green-500');
+            } else {
+                document.getElementById('progress-bar').classList.add('bg-indigo-600');
+                document.getElementById('progress-bar').classList.remove('bg-green-500');
+            }
+
+            renderTasks();
+            renderGrid();
+        }
+
+        // ==========================
+        // 2. MOCK TRACKER LOGIC
+        // ==========================
+        
+        let mockChartInstance = null;
+
+        document.getElementById('mockDate').value = todayStr;
+
+        function saveCutoffs() {
+            state.cutoffs.po = parseFloat(document.getElementById('cutoffPO').value) || null;
+            state.cutoffs.clerk = parseFloat(document.getElementById('cutoffClerk').value) || null;
+            saveState();
+            generateMockReport(); // Refresh report UI to show updated cutoff metrics
+        }
+        
+        function loadCutoffs() {
+            if(state.cutoffs.po) document.getElementById('cutoffPO').value = state.cutoffs.po;
+            if(state.cutoffs.clerk) document.getElementById('cutoffClerk').value = state.cutoffs.clerk;
+        }
+
+        function addMock(e) {
+            e.preventDefault();
+            const date = document.getElementById('mockDate').value;
+            const name = document.getElementById('mockName').value.trim();
+            const type = document.getElementById('mockType').value;
+            const marks = parseFloat(document.getElementById('mockMarks').value);
+            const total = parseFloat(document.getElementById('mockTotal').value);
+            const attempted = parseInt(document.getElementById('mockAttempted').value);
+            const correct = parseInt(document.getElementById('mockCorrect').value);
+
+            if(marks > total || correct > attempted) {
+                alert("Invalid data: Marks cannot exceed Total, and Correct Qs cannot exceed Attempted Qs.");
+                return;
+            }
+
+            const newMock = {
+                id: Date.now().toString(),
+                date,
+                name,
+                type,
+                marks,
+                total,
+                attempted,
+                correct,
+                timestamp: Date.now()
+            };
+
+            state.mocks.push(newMock);
+            state.mocks.sort((a,b) => new Date(a.date) - new Date(b.date) || a.timestamp - b.timestamp);
+            
+            saveState(); 
+            updateMockUI();
+            
+            document.getElementById('mockName').value = '';
+            document.getElementById('mockMarks').value = '';
+            document.getElementById('mockTotal').value = '';
+            document.getElementById('mockAttempted').value = '';
+            document.getElementById('mockCorrect').value = '';
+            
+            alert("Mock score saved successfully!");
+        }
+
+        function deleteMock(id) {
+            if(confirm("Are you sure you want to delete this record?")) {
+                state.mocks = state.mocks.filter(m => m.id !== id);
+                saveState();
+                updateMockUI();
+            }
+        }
+
+        function updateMockUI() {
+            renderMockTable();
+            renderMockChart();
+            generateMockReport();
+        }
+
+        function renderMockTable() {
+            const tbody = document.getElementById('mockTableBody');
+            tbody.innerHTML = '';
+            
+            const sortedMocks = [...state.mocks].sort((a,b) => b.timestamp - a.timestamp);
+            
+            if(sortedMocks.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="5" class="p-4 text-center text-gray-500 italic">No mocks logged yet. Start practicing!</td></tr>';
+                return;
+            }
+
+            sortedMocks.forEach(mock => {
+                const tr = document.createElement('tr');
+                tr.className = "hover:bg-gray-50 transition";
+                
+                const displayDate = new Date(mock.date).toLocaleDateString('en-US', {month:'short', day:'numeric'});
+                const accuracy = mock.attempted > 0 ? Math.round((mock.correct/mock.attempted)*100) : 0;
+                
+                const pct = (mock.marks / mock.total) * 100;
+                let scoreColor = 'text-green-600';
+                if(pct < 50) scoreColor = 'text-red-600';
+                else if (pct < 75) scoreColor = 'text-yellow-600';
+                else if (pct >= 90) scoreColor = 'text-purple-600';
+
+                let typeBadge = '';
+                if(mock.type === 'Full') typeBadge = '<span class="px-2 py-0.5 bg-red-100 text-red-700 text-xs rounded border border-red-200 ml-2">Full</span>';
+                if(mock.type === 'Sectional') typeBadge = '<span class="px-2 py-0.5 bg-blue-100 text-blue-700 text-xs rounded border border-blue-200 ml-2">Sec</span>';
+                if(mock.type === 'Topic') typeBadge = '<span class="px-2 py-0.5 bg-gray-100 text-gray-700 text-xs rounded border border-gray-200 ml-2">Topic</span>';
+
+                tr.innerHTML = `
+                    <td class="p-3 whitespace-nowrap text-gray-500 text-xs font-mono">${displayDate}</td>
+                    <td class="p-3 font-medium text-gray-800">${mock.name} ${typeBadge}</td>
+                    <td class="p-3 font-bold ${scoreColor}">${mock.marks} <span class="text-xs font-normal text-gray-400">/ ${mock.total}</span></td>
+                    <td class="p-3 text-gray-600"><div class="flex items-center"><div class="w-16 bg-gray-200 rounded-full h-1.5 mr-2"><div class="bg-indigo-500 h-1.5 rounded-full" style="width: ${accuracy}%"></div></div> ${accuracy}%</div></td>
+                    <td class="p-3 text-center">
+                        <button onclick="deleteMock('${mock.id}')" class="text-red-400 hover:text-red-600" title="Delete"><i class="fas fa-trash"></i></button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        function renderMockChart() {
+            const ctx = document.getElementById('mockChart').getContext('2d');
+            const noDataMsg = document.getElementById('noDataMsg');
+            
+            if (state.mocks.length === 0) {
+                noDataMsg.style.display = 'block';
+                if (mockChartInstance) mockChartInstance.destroy();
+                return;
+            }
+            
+            noDataMsg.style.display = 'none';
+
+            const labels = state.mocks.map(m => new Date(m.date).toLocaleDateString('en-US', {month:'short', day:'numeric'}));
+            const dataPercentages = state.mocks.map(m => ((m.marks / m.total) * 100).toFixed(2));
+            const dataNames = state.mocks.map(m => m.name);
+
+            if (mockChartInstance) {
+                mockChartInstance.destroy();
+            }
+
+            mockChartInstance = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Score Percentage (%)',
+                        data: dataPercentages,
+                        borderColor: '#4f46e5',
+                        backgroundColor: 'rgba(79, 70, 229, 0.1)',
+                        borderWidth: 3,
+                        pointBackgroundColor: '#ffffff',
+                        pointBorderColor: '#4f46e5',
+                        pointBorderWidth: 2,
+                        pointRadius: 4,
+                        pointHoverRadius: 6,
+                        fill: true,
+                        tension: 0.3
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            callbacks: {
+                                title: function(context) { return dataNames[context[0].dataIndex]; },
+                                label: function(context) { return `Score: ${context.parsed.y}%`; }
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            max: 100,
+                            grid: { color: '#f3f4f6' },
+                            ticks: { callback: function(value) { return value + "%" } }
+                        },
+                        x: { grid: { display: false } }
+                    }
+                }
+            });
+        }
+
+        function generateMockReport() {
+            const reportCard = document.getElementById('mockReportCard');
+            const reportText = document.getElementById('mockReportText');
+            const cutoffText = document.getElementById('mockCutoffText');
+            
+            cutoffText.className = "mt-3 pt-3 border-t border-indigo-200 text-sm font-semibold hidden"; // reset
+            
+            const fullMocks = state.mocks.filter(m => m.type === 'Full');
+            let latestTest = null;
+            
+            if (fullMocks.length >= 2) {
+                const latest = fullMocks[fullMocks.length - 1];
+                const previous = fullMocks[fullMocks.length - 2];
+                latestTest = latest;
+                
+                const diff = latest.marks - previous.marks;
+                
+                if (diff > 0) {
+                    reportText.innerHTML = `Great progress! You scored <b><span class="text-green-600">+${diff} marks</span></b> higher on your latest Full Mock (<i>${latest.name}</i>) compared to the previous one. Keep the momentum! 🚀`;
+                    reportCard.className = "bg-green-50 border-l-4 border-green-500 rounded-r-lg p-4 mb-6 shadow-sm";
+                    reportCard.querySelector('i').className = "fas fa-arrow-trend-up text-green-500 mt-1 mr-3 text-lg";
+                } else if (diff < 0) {
+                    reportText.innerHTML = `You scored <b><span class="text-red-600">${diff} marks</span></b> lower on your latest Full Mock (<i>${latest.name}</i>). Don't worry! Analyze your weak areas deeply before the next one. 📚`;
+                    reportCard.className = "bg-orange-50 border-l-4 border-orange-500 rounded-r-lg p-4 mb-6 shadow-sm";
+                    reportCard.querySelector('i').className = "fas fa-exclamation-circle text-orange-500 mt-1 mr-3 text-lg";
+                } else {
+                    reportText.innerHTML = `Your score on <i>${latest.name}</i> is exactly the same as your previous mock. Focus on accuracy and speed to break the plateau! ⚡`;
+                    reportCard.className = "bg-blue-50 border-l-4 border-blue-500 rounded-r-lg p-4 mb-6 shadow-sm";
+                    reportCard.querySelector('i').className = "fas fa-minus-circle text-blue-500 mt-1 mr-3 text-lg";
+                }
+                reportCard.style.display = 'block';
+            } 
+            else if (state.mocks.length >= 2) {
+                const latest = state.mocks[state.mocks.length - 1];
+                const previous = state.mocks[state.mocks.length - 2];
+                latestTest = latest;
+                
+                const latestPct = (latest.marks/latest.total)*100;
+                const prevPct = (previous.marks/previous.total)*100;
+                const diffPct = latestPct - prevPct;
+
+                if (diffPct > 0) {
+                    reportText.innerHTML = `Awesome! Your percentage score increased by <b><span class="text-green-600">+${diffPct.toFixed(1)}%</span></b> on <i>${latest.name}</i> compared to the previous test.`;
+                    reportCard.className = "bg-green-50 border-l-4 border-green-500 rounded-r-lg p-4 mb-6 shadow-sm";
+                    reportCard.querySelector('i').className = "fas fa-arrow-trend-up text-green-500 mt-1 mr-3 text-lg";
+                } else if (diffPct < 0) {
+                    reportText.innerHTML = `Your percentage score dropped by <b><span class="text-red-600">${Math.abs(diffPct).toFixed(1)}%</span></b> on <i>${latest.name}</i>. Deep analysis required!`;
+                    reportCard.className = "bg-orange-50 border-l-4 border-orange-500 rounded-r-lg p-4 mb-6 shadow-sm";
+                    reportCard.querySelector('i').className = "fas fa-exclamation-circle text-orange-500 mt-1 mr-3 text-lg";
+                } else {
+                    reportText.innerHTML = `Keep practicing! Give a Full Mock Test to unlock deep comparative analysis.`;
+                    reportCard.className = "bg-blue-50 border-l-4 border-blue-500 rounded-r-lg p-4 mb-6 shadow-sm";
+                    reportCard.querySelector('i').className = "fas fa-info-circle text-blue-500 mt-1 mr-3 text-lg";
+                }
+                reportCard.style.display = 'block';
+            } else if (state.mocks.length === 1) {
+                 // Even if only 1 test exists, we can still evaluate it against cutoffs.
+                 latestTest = state.mocks[0];
+                 reportText.innerHTML = `First mock logged! Give one more mock test to see comparative progress insights.`;
+                 reportCard.className = "bg-blue-50 border-l-4 border-blue-500 rounded-r-lg p-4 mb-6 shadow-sm";
+                 reportCard.querySelector('i').className = "fas fa-info-circle text-blue-500 mt-1 mr-3 text-lg";
+                 reportCard.style.display = 'block';
+            } else {
+                reportCard.style.display = 'none';
+            }
+            
+            // --- CUTOFF LOGIC ---
+            if (latestTest) {
+                let target = null;
+                let examType = "";
+                const lowerName = latestTest.name.toLowerCase();
+                
+                if(lowerName.includes('po') || lowerName.includes('officer scale 1') || lowerName.includes('os1')) { 
+                    target = state.cutoffs.po; 
+                    examType = "PO"; 
+                }
+                else if(lowerName.includes('clerk') || lowerName.includes('oa') || lowerName.includes('office assistant') || lowerName.includes('assistant')) { 
+                    target = state.cutoffs.clerk; 
+                    examType = "Clerk"; 
+                }
+
+                if(target) {
+                    const gap = latestTest.marks - target;
+                    if(gap >= 0) {
+                        cutoffText.innerHTML = `<i class="fas fa-medal text-yellow-500 mr-1"></i> You cleared your state's ${examType} Cutoff by <b class="text-green-600">+${gap.toFixed(2)} marks</b>! 🎉`;
+                    } else {
+                        cutoffText.innerHTML = `<i class="fas fa-road text-gray-500 mr-1"></i> You are <b class="text-red-500">${Math.abs(gap).toFixed(2)} marks</b> away from your state's ${examType} Cutoff. Keep pushing!`;
+                    }
+                    cutoffText.classList.remove('hidden');
+                }
+            }
+        }
+        
+        // ==========================
+        // 3. MISTAKE BOOK LOGIC
+        // ==========================
+        
+        function addMistake(e) {
+            e.preventDefault();
+            const topic = document.getElementById('mistakeTopic').value.trim();
+            const desc = document.getElementById('mistakeDesc').value.trim();
+            
+            const newMistake = {
+                id: Date.now().toString(),
+                topic,
+                desc,
+                date: getTodayString()
+            };
+            
+            state.mistakes.unshift(newMistake); // Add to beginning
+            saveState();
+            renderMistakes();
+            
+            document.getElementById('mistakeTopic').value = '';
+            document.getElementById('mistakeDesc').value = '';
+        }
+
+        function deleteMistake(id) {
+            if(confirm("Delete this mistake note?")) {
+                state.mistakes = state.mistakes.filter(m => m.id !== id);
+                saveState();
+                renderMistakes();
+            }
+        }
+
+        function renderMistakes() {
+            const list = document.getElementById('mistakesList');
+            list.innerHTML = '';
+            
+            if(state.mistakes.length === 0) {
+                list.innerHTML = '<div class="text-center p-8 bg-gray-50 rounded-xl border border-dashed border-gray-300 text-gray-500"><i class="fas fa-check-circle text-4xl mb-3 text-gray-300"></i><p>No mistakes logged yet. You are doing great!</p></div>';
+                return;
+            }
+
+            state.mistakes.forEach(m => {
+                const displayDate = new Date(m.date).toLocaleDateString('en-US', {month:'short', day:'numeric'});
+                const div = document.createElement('div');
+                div.className = "bg-white p-4 rounded-xl border border-gray-200 shadow-sm relative hover:border-orange-200 transition";
+                div.innerHTML = `
+                    <div class="flex justify-between items-start mb-2">
+                        <span class="inline-block bg-orange-100 text-orange-800 text-xs font-bold px-2.5 py-1 rounded-md border border-orange-200">${m.topic}</span>
+                        <div class="flex items-center gap-3">
+                            <span class="text-xs text-gray-400 font-mono"><i class="far fa-calendar-alt mr-1"></i>${displayDate}</span>
+                            <button onclick="deleteMistake('${m.id}')" class="text-gray-300 hover:text-red-500 transition"><i class="fas fa-trash"></i></button>
+                        </div>
+                    </div>
+                    <p class="text-sm text-gray-700 whitespace-pre-wrap">${m.desc}</p>
+                `;
+                list.appendChild(div);
+            });
+        }
+
+        // Initialize Apps
+        updateCountdowns();
+        setInterval(updateCountdowns, 60000); 
+        updateUI();
+        
+        // Initialize Mock Tracker & Cutoffs
+        loadCutoffs();
+        updateMockUI();
+        
+        // Initialize Mistake Book
+        renderMistakes();
+
+    </script>
+</body>
+</html>
