@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Banking Todo List</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f0f2f5;
+            margin: 0;
+            padding: 20px;
+        }
+        .container {
+            max-width: 700px;
+            margin: 0 auto;
+            background: #ffffff;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+        h2 {
+            text-align: center;
+            color: #1a73e8;
+            margin-bottom: 30px;
+        }
+        .todo-item {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 15px;
+            align-items: center;
+            animation: fadeIn 0.3s ease-in-out;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-5px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .todo-item input {
+            flex: 1;
+            padding: 10px;
+            border: 1px solid #ced4da;
+            border-radius: 5px;
+            font-size: 15px;
+            transition: border-color 0.2s;
+        }
+        .todo-item input:focus {
+            border-color: #1a73e8;
+            outline: none;
+        }
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 15px;
+            font-weight: 500;
+            transition: opacity 0.2s;
+        }
+        .btn:hover {
+            opacity: 0.9;
+        }
+        .btn-add {
+            background-color: #28a745;
+            color: white;
+            font-size: 18px;
+            padding: 8px 15px;
+            display: block;
+            margin-top: 15px;
+        }
+        .btn-delete {
+            background-color: #dc3545;
+            color: white;
+            padding: 10px 15px;
+        }
+        .actions {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 30px;
+            border-top: 1px solid #e9ecef;
+            padding-top: 25px;
+        }
+        .btn-export {
+            background-color: #1a73e8;
+            color: white;
+        }
+        .btn-clear {
+            background-color: #dc3545;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>🏦 Banking Todo List</h2>
+    <div id="todo-list">
+        <!-- Todo items will be appended here -->
+    </div>
+    
+    <button class="btn btn-add" onclick="addTodo()" title="Add new task">➕ Add Task</button>
+
+    <div class="actions">
+        <button class="btn btn-export" onclick="exportToTxt()">📄 Export to TXT</button>
+        <button class="btn btn-clear" onclick="deleteAll()">🗑️ Delete All</button>
+    </div>
+</div>
+
+<script>
+    const todoListElement = document.getElementById('todo-list');
+    let todos = JSON.parse(localStorage.getItem('bankingTodos')) || [];
+
+    function saveTodos() {
+        localStorage.setItem('bankingTodos', JSON.stringify(todos));
+    }
+
+    function renderTodos() {
+        todoListElement.innerHTML = '';
+        todos.forEach((todo, index) => {
+            const itemDiv = document.createElement('div');
+            itemDiv.className = 'todo-item';
+
+            const topicInput = document.createElement('input');
+            topicInput.type = 'text';
+            topicInput.placeholder = 'Topic Name';
+            topicInput.value = todo.topic;
+            topicInput.oninput = (e) => {
+                todos[index].topic = e.target.value;
+                saveTodos();
+            };
+
+            const taskInput = document.createElement('input');
+            taskInput.type = 'text';
+            taskInput.placeholder = 'Task Name / Details';
+            taskInput.value = todo.task;
+            taskInput.oninput = (e) => {
+                todos[index].task = e.target.value;
+                saveTodos();
+            };
+
+            const deleteBtn = document.createElement('button');
+            deleteBtn.className = 'btn btn-delete';
+            deleteBtn.innerText = 'X';
+            deleteBtn.title = 'Delete this task';
+            deleteBtn.onclick = () => {
+                deleteTodo(index);
+            };
+
+            itemDiv.appendChild(topicInput);
+            itemDiv.appendChild(taskInput);
+            itemDiv.appendChild(deleteBtn);
+            todoListElement.appendChild(itemDiv);
+        });
+
+        // Add an empty row if no todos exist
+        if (todos.length === 0) {
+            addTodo();
+        }
+    }
+
+    function addTodo() {
+        todos.push({ topic: '', task: '' });
+        saveTodos();
+        renderTodos();
+    }
+
+    function deleteTodo(index) {
+        todos.splice(index, 1);
+        saveTodos();
+        renderTodos();
+    }
+
+    function deleteAll() {
+        if (confirm('Kya aap sach mein sabhi tasks delete karna chahte hain?')) {
+            todos = [];
+            saveTodos();
+            renderTodos();
+        }
+    }
+
+    function exportToTxt() {
+        if (todos.length === 0 || (todos.length === 1 && !todos[0].topic && !todos[0].task)) {
+            alert('Export karne ke liye koi data nahi hai!');
+            return;
+        }
+
+        let txtContent = "";
+        
+        todos.forEach((todo) => {
+            if (todo.topic.trim() || todo.task.trim()) {
+                let topicStr = todo.topic.trim();
+                let taskStr = todo.task.trim();
+                
+                // Capitalize first letter of topic to look human
+                if(topicStr) {
+                    topicStr = topicStr.charAt(0).toUpperCase() + topicStr.slice(1);
+                }
+                
+                if (topicStr && taskStr) {
+                    txtContent += `✅ ${topicStr}: ${taskStr}\n`;
+                } else if (topicStr) {
+                    txtContent += `✅ ${topicStr}\n`;
+                } else if (taskStr) {
+                    txtContent += `✅ ${taskStr}\n`;
+                }
+            }
+        });
+
+        const blob = new Blob([txtContent], { type: 'text/plain' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'Banking_Todos.txt';
+        a.click();
+        URL.revokeObjectURL(url);
+    }
+
+    // Initial render
+    renderTodos();
+</script>
+
+</body>
+</html>
